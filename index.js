@@ -33,18 +33,31 @@ async function run() {
     });
 
     const bossCollection = client.db("bistroBossDB").collection("menu");
+    const usersCollection = client.db("bistroBossDB").collection("users");
     const reviewsCollection = client.db("bistroBossDB").collection("reviews");
     const cartsCollection = client.db("bistroBossDB").collection("carts");
 
+    // users api
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    //  menu related api
     app.get("/menu", async (req, res) => {
       const result = await bossCollection.find().toArray();
       res.send(result);
     });
+
+    // reviews api
     app.get("/reviews", async (req, res) => {
       const result = await reviewsCollection.find().toArray();
       res.send(result);
     });
 
+    // carts api
     app.get("/carts", async (req, res) => {
       const email = req.query.email;
       if (!email) {
