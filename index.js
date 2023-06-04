@@ -55,6 +55,16 @@ async function run() {
     const reviewsCollection = client.db("bistroBossDB").collection("reviews");
     const cartsCollection = client.db("bistroBossDB").collection("carts");
 
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== "admin") {
+        return res.status(403).send({ error: true, message: "forbidden access" });
+      }
+      next();
+    };
+
     // jwt
 
     app.post("/jwt", (req, res) => {
@@ -65,8 +75,20 @@ async function run() {
 
     // users api
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyJwt, verifyAdmin, async (req, res) => {
       const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/users/admin/:email", verifyJwt, async (req, res) => {
+      const email = req.params.email;
+      if (req.decoded.email !== email) {
+        return res.status(403).send({ error: 1, message: "forbidden access" });
+      }
+
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const result = { admin: user?.role === "admin" };
       res.send(result);
     });
 
@@ -86,7 +108,7 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const updateUser = {
         $set: {
-          roll: "admin",
+          role: "admin",
         },
       };
       const result = await usersCollection.updateOne(filter, updateUser);
