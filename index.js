@@ -213,7 +213,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  console.log("Bistro boss server is running");
+  res.send("Bistro boss server is running");
 });
 
 app.listen(port, () => {
